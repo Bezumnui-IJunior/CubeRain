@@ -1,16 +1,18 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
-public class DropSpawner : MonoBehaviour, IReleasable
+public class DropSpawner : MonoBehaviour
 {
     [SerializeField] private Drop _dropPrefab;
     [SerializeField] private Vector3 _maxSpawnOffset;
     [SerializeField] private int _poolSize;
-    [SerializeField] private float _spawnChance = 0.01f;
-    [SerializeField] private bool _isEnable;
+    [SerializeField] private float _spawnDelaySeconds = 0.01f;
 
     private ObjectPool<Drop> _pool;
+    private WaitForSecondsRealtime _spawnDelay;
+    private Coroutine _coroutine;
 
     private void Awake()
     {
@@ -23,63 +25,75 @@ public class DropSpawner : MonoBehaviour, IReleasable
             _poolSize,
             _poolSize
         );
+
+        _spawnDelay = new WaitForSecondsRealtime(_spawnDelaySeconds);
     }
 
-    private void FixedUpdate()
+    private void OnEnable()
     {
-        if (_isEnable)
-            SpawnWithChance();
+        _coroutine = StartCoroutine(Spawning());
+    }
+
+    private void OnDisable()
+    {
+        if (_coroutine == null)
+            return;
+
+        StopCoroutine(_coroutine);
+        _coroutine = null;
+    }
+
+    public void Release(Drop drop)
+    {
+        _pool.Release(drop);
     }
 
     private Drop CreateDrop()
     {
         Drop drop = Instantiate(_dropPrefab);
 
-        if (drop.TryGetComponent(out DropDestructor destructor))
-            destructor.Init(this);
-
         return drop;
-    }
-
-    private void OnGet(Drop drop)
-    {
-        drop.OnPoolGet();
-        drop.gameObject.SetActive(true);
     }
 
     private void OnRelease(Drop drop)
     {
-        drop.OnPoolRelease();
         drop.gameObject.SetActive(false);
+        drop.Dying -= Release;
+    }
+
+    private void OnGet(Drop drop)
+    {
+        drop.gameObject.SetActive(true);
+        drop.Reset();
+        drop.Dying += Release;
     }
 
     [ContextMenu("Spawn")]
     private void Spawn()
     {
-        SpawnDrop(transform.position);
+        SpawnDrop();
     }
 
-    private void SpawnWithChance()
+    private IEnumerator Spawning()
     {
-        if (_pool.CountActive >= _poolSize)
-            return;
+        while (enabled)
+        {
+            yield return _spawnDelay;
 
-        if (_spawnChance > Random.value)
-            SpawnDrop(transform.position);
+            if (_pool.CountActive >= _poolSize)
+                continue;
+
+            SpawnDrop();
+        }
     }
 
-    private void SpawnDrop(Vector3 position)
+    private void SpawnDrop()
     {
         _pool.Get(out Drop drop);
         float xOffset = Random.Range(-_maxSpawnOffset.x, _maxSpawnOffset.x);
         float yOffset = Random.Range(-_maxSpawnOffset.y, _maxSpawnOffset.y);
         float zOffset = Random.Range(-_maxSpawnOffset.z, _maxSpawnOffset.z);
 
-        drop.transform.position = position + new Vector3(xOffset, yOffset, zOffset);
-    }
-
-    public void Release(Drop drop)
-    {
-        _pool.Release(drop);
+        drop.transform.position = transform.position + new Vector3(xOffset, yOffset, zOffset);
     }
 }

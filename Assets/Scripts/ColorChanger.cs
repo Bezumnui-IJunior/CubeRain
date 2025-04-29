@@ -4,40 +4,32 @@ using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(Renderer))]
 [RequireComponent(typeof(Collider))]
-[RequireComponent(typeof(Drop))]
 public class ColorChanger : MonoBehaviour
 {
+    [SerializeField] private Color _initialColor = Color.white;
+
     private Renderer _renderer;
-    private GameObject _objectHit;
-    private Drop _drop;
+    private ColorChangeTrigger _objectHit;
 
     private void Awake()
     {
         _renderer = GetComponent<Renderer>();
-        _drop = GetComponent<Drop>();
     }
 
-    public void OnEnable()
+    public void RandomizeColor(Collision other)
     {
-        _drop.PoolRelease += OnPoolRelease;
-    }
-
-    private void OnCollisionEnter(Collision other)
-    {
-        if (_objectHit == other.gameObject)
+        if (other.gameObject.TryGetComponent(out ColorChangeTrigger trigger) == false) 
+            return;
+        if (_objectHit == trigger)
             return;
 
-        _objectHit = other.gameObject;
+        _objectHit = trigger;
         _renderer.material.color = Random.ColorHSV();
     }
 
-    private void OnDisable()
-    {
-        _drop.PoolRelease -= OnPoolRelease;
-    }
-
-    private void OnPoolRelease()
+    public void Reset()
     {
         _objectHit = null;
+        _renderer.material.color = _initialColor;
     }
 }

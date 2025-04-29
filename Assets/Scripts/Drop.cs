@@ -1,32 +1,46 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(ColorChanger))]
 public class Drop : MonoBehaviour
 {
-    public event Action PoolGet;
-    public event Action PoolRelease;
+    [SerializeField] private float _minLifetime = 2;
+    [SerializeField] private float _maxLifetime = 5;
 
     private Rigidbody _rigidbody;
+    private ColorChanger _colorChanger;
+    public event Action<Drop> Dying;
 
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
+        _colorChanger = GetComponent<ColorChanger>();
     }
 
-    public void OnPoolRelease()
+    private void OnCollisionEnter(Collision other)
     {
-        PoolRelease?.Invoke();
+        _colorChanger.RandomizeColor(other);
+        StartCoroutine(ReleaseWithRandomDelay());
     }
 
-    public void OnPoolGet()
+    public void Reset()
     {
         _rigidbody.linearVelocity = Vector3.zero;
-        PoolGet?.Invoke();
+        _colorChanger.Reset();
     }
 
     public void Destroy()
     {
         Destroy(gameObject);
+    }
+
+    private IEnumerator ReleaseWithRandomDelay()
+    {
+        yield return new WaitForSeconds(Random.Range(_minLifetime, _maxLifetime));
+
+        Dying?.Invoke(this);
     }
 }
