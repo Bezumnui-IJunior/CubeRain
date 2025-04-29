@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 public class DropDestructor : MonoBehaviour
 {
     [SerializeField] private float _minDamagedLifetime = 2f;
-    [SerializeField] private float _maxDamagedLifetime = 6f;
+    [SerializeField] private float _maxDamagedLifetime = 5f;
     [SerializeField] private float _maxLifetime = 20f;
 
     private WaitForSeconds _lifetimeDelay;
