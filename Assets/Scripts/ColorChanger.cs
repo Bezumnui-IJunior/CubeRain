@@ -16,10 +16,8 @@ public class ColorChanger : MonoBehaviour
         _renderer = GetComponent<Renderer>();
     }
 
-    public void RandomizeColor(Collision other)
+    public void RandomizeColor(ColorChangeTrigger trigger)
     {
-        if (other.gameObject.TryGetComponent(out ColorChangeTrigger trigger) == false) 
-            return;
         if (_objectHit == trigger)
             return;
 
