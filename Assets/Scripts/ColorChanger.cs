@@ -9,14 +9,14 @@ public class ColorChanger : MonoBehaviour
     [SerializeField] private Color _initialColor = Color.white;
 
     private Renderer _renderer;
-    private ColorChangeTrigger _objectHit;
+    private InfectionTrigger _objectHit;
 
     private void Awake()
     {
         _renderer = GetComponent<Renderer>();
     }
 
-    public void RandomizeColor(ColorChangeTrigger trigger)
+    public void RandomizeColor(InfectionTrigger trigger)
     {
         if (_objectHit == trigger)
             return;
