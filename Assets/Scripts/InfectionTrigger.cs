@@ -1,3 +1,4 @@
+using GameObjects;
 using UnityEngine;
 
 public class InfectionTrigger : MonoBehaviour

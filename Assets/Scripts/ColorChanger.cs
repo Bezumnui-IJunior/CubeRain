@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(Renderer))]
@@ -7,13 +6,19 @@ using Random = UnityEngine.Random;
 public class ColorChanger : MonoBehaviour
 {
     [SerializeField] private Color _initialColor = Color.white;
+    private InfectionTrigger _objectHit;
 
     private Renderer _renderer;
-    private InfectionTrigger _objectHit;
 
     private void Awake()
     {
         _renderer = GetComponent<Renderer>();
+    }
+
+    public void Reset()
+    {
+        _objectHit = null;
+        _renderer.material.color = _initialColor;
     }
 
     public void RandomizeColor(InfectionTrigger trigger)
@@ -23,11 +28,5 @@ public class ColorChanger : MonoBehaviour
 
         _objectHit = trigger;
         _renderer.material.color = Random.ColorHSV();
-    }
-
-    public void Reset()
-    {
-        _objectHit = null;
-        _renderer.material.color = _initialColor;
     }
 }
