@@ -4,12 +4,16 @@ using Object = UnityEngine.Object;
 
 namespace Spawners
 {
-    public abstract class Spawner<T> : MonoBehaviour where T : Object, ISpawnable<T>
+    public abstract class Spawner<T> : MonoBehaviour, ISpawner where T : Object, ISpawnable<T>
     {
         [SerializeField] private T _prefab;
         [SerializeField] private int _poolSize;
 
         private ObjectPool<T> _pool;
+
+        public int TotalCount { get; private set; }
+        public int SpawnedCount => _pool.CountAll;
+        public int AliveCount => _pool.CountActive;
 
         protected virtual void Awake()
         {
@@ -30,6 +34,7 @@ namespace Spawners
         protected T InstantiateObject()
         {
             _pool.Get(out T o);
+            TotalCount++;
 
             return o;
         }
